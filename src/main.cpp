@@ -8,8 +8,7 @@
 BLEScan *pBLEScan;
 
 class MyAdvertisedDeviceCallbacks : public BLEAdvertisedDeviceCallbacks {
-    void onResult(BLEAdvertisedDevice advertisedDevice)  {
-    }
+    void onResult(BLEAdvertisedDevice advertisedDevice)  {}
 };
 
 
