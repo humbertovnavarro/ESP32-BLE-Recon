@@ -28,6 +28,6 @@ void loop() {
   int count = foundDevices.getCount();
   for (int i = 0; i < count; i++) {
     BLEAdvertisedDevice device = foundDevices.getDevice(i);
-    Serial.println(device.toString().c_str());
+    Serial.println(device.getAddress().toString().c_str());
   }
 }
