@@ -1,19 +1,9 @@
-// add TX POWER
-// toggle scan / interval / window via serial
-
-#define PIN       1
-#define NUMPIXELS 1
-
-#define FW "v0.0_240301"
 #define JSONSTR "{\"ID\":\"%s\",\"FW\":\"%s\",\"TYPE\":\"%s\",\"UUID\":\"%s\",\"MFR\":\"%s\",\"NAME\":\"%s\",\"MAC\":\"%s\",\"RSSI\":\"%i\",\"TX\":\"%i\"%s}\n\r"
-
 #define SCANTIME 5
 #define SCANTYPE ACTIVE
 #define SCAN_INT 100
 #define SCAN_WINDOW 99
-
 #include <Arduino.h>
-
 #include <BLEDevice.h>
 #include <BLEUtils.h>
 #include <BLEScan.h>
@@ -21,15 +11,11 @@
 #include <BLEEddystoneURL.h>
 #include <BLEEddystoneTLM.h>
 #include <BLEBeacon.h>
-#include <Adafruit_NeoPixel.h>
 
 #define ENDIAN_CHANGE_U16(x) ((((x)&0xFF00) >> 8) + (((x)&0xFF) << 8))
 
 int scanTime = SCANTIME; //In seconds
 BLEScan *pBLEScan;
-
-// Adafruit NeoPixel for headless status
-Adafruit_NeoPixel pixels(NUMPIXELS, PIN, NEO_GRB + NEO_KHZ800);
 
 uint8_t sta_mac[6];
 char strID[18];
@@ -81,7 +67,7 @@ class MyAdvertisedDeviceCallbacks : public BLEAdvertisedDeviceCallbacks {
           }
         }
 
-        Serial.printf(JSONSTR,FW,strID,type,uuidStr,charManufacturerData,advertisedDevice.getName().c_str(),advertisedDevice.getAddress().toString().c_str(),advertisedDevice.getRSSI(),advertisedDevice.getTXPower(),strAddl);
+        Serial.printf(JSONSTR,strID,type,uuidStr,charManufacturerData,advertisedDevice.getName().c_str(),advertisedDevice.getAddress().toString().c_str(),advertisedDevice.getRSSI(),advertisedDevice.getTXPower(),strAddl);
         return;
       }
 
@@ -136,7 +122,7 @@ class MyAdvertisedDeviceCallbacks : public BLEAdvertisedDeviceCallbacks {
         }
       }
       
-       Serial.printf(JSONSTR,FW,strID,type,uuidStr,charManufacturerData,advertisedDevice.getName().c_str(),advertisedDevice.getAddress().toString().c_str(),advertisedDevice.getRSSI(),advertisedDevice.getTXPower(),strAddl);
+       Serial.printf(JSONSTR,strID,type,uuidStr,charManufacturerData,advertisedDevice.getName().c_str(),advertisedDevice.getAddress().toString().c_str(),advertisedDevice.getRSSI(),advertisedDevice.getTXPower(),strAddl);
     }
 };
 
@@ -145,20 +131,12 @@ class MyAdvertisedDeviceCallbacks : public BLEAdvertisedDeviceCallbacks {
 
 void setup() {
   Serial.begin(115200);
-  pixels.begin();
-
   BLEDevice::init("");
   pBLEScan = BLEDevice::getScan();
   pBLEScan->setAdvertisedDeviceCallbacks(new MyAdvertisedDeviceCallbacks());
   pBLEScan->setActiveScan(true); //active scan uses more power, but get results faster
   pBLEScan->setInterval(SCAN_INT);
   pBLEScan->setWindow(SCAN_WINDOW);       // less or equal setInterval value
-
-  // Green Status on Startup
-  pixels.clear();
-  pixels.setPixelColor(0, pixels.Color(0, 150, 0));
-  pixels.show();
-
   // Bluetooth MAC Address 
   esp_read_mac(sta_mac,ESP_MAC_BT);
   sprintf(strID,"%02X:%02X:%02X:%02X:%02X:%02X",sta_mac[0],sta_mac[1],sta_mac[2],sta_mac[3],sta_mac[4],sta_mac[5]);
@@ -166,19 +144,6 @@ void setup() {
 }
 
 void loop() {
-  pixels.clear();
-  pixels.setPixelColor(0, pixels.Color(0, 0, 150));
-  pixels.show();
-
   BLEScanResults foundDevices = pBLEScan->start(scanTime, false);
   pBLEScan->clearResults(); // delete results fromBLEScan buffer to release memory
-
-  pixels.clear();
-  pixels.setPixelColor(0, pixels.Color(150, 0, 0));
-  pixels.show();
-  // delay(2000);
-  //   Serial.println(foundDevices.getCount());
 }
-
-
-// https://github.com/nkolban/esp32-snippets/issues/858
